@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import * as z from "zod";
 import { Models } from "appwrite";
 import { useForm } from "react-hook-form";
@@ -30,6 +31,8 @@ const PostForm = ({ post, action }: PostFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useUserContext();
+    const [fileChanged, setFileChanged] = useState(false);
+
   const form = useForm<z.infer<typeof PostValidation>>({
     resolver: zodResolver(PostValidation),
     defaultValues: {
@@ -39,6 +42,15 @@ const PostForm = ({ post, action }: PostFormProps) => {
       tags: post ? post.tags.join(",") : "",
     },
   });
+
+
+    useEffect(() => {
+    if (form.formState.isDirty) {
+      setFileChanged(true);
+    } else {
+      setFileChanged(false);
+    }
+  }, [form.formState.isDirty]);
 
   // Query
   const { mutateAsync: createPost, isLoading: isLoadingCreate } =
@@ -163,8 +175,8 @@ const PostForm = ({ post, action }: PostFormProps) => {
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
-            disabled={isLoadingCreate || isLoadingUpdate}>
-            {(isLoadingCreate || isLoadingUpdate) && <Loader />}
+            disabled={isLoadingCreate || isLoadingUpdate || !fileChanged}>
+            {(isLoadingCreate || isLoadingUpdate ) && <Loader />}
             {action} Post
           </Button>
         </div>
